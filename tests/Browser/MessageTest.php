@@ -5,6 +5,8 @@ namespace Tests\Browser;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class MessageTest extends DuskTestCase
 {
@@ -16,21 +18,17 @@ class MessageTest extends DuskTestCase
      */
     public function testExample()
     {
-        $this->browse(function ($browser)  {
-            $browser->visit('/register')
-                    ->type('name', 'Viktor')
-                    ->type('email', 'v.kalyaev@gmail.com')
-                    ->type('password', 'password')
-                    ->type('password_confirmation', 'password')
-                    ->press('Регистрация')
-                    ->assertPathIs('/dashboard');
-        });
+        $user = User::factory()->create([
+            'email' => 'v.kalyaev@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
 
         $this->browse(function ($browser)  {
-            $browser->visit('/addmessage')
+            $browser->loginAs(User::find(1))
+                    ->visit('/addmessage')
                     ->type('message', 'My test message')
                     ->press('Добавить')
-                    ->assertPathIs('/addmessage');
+                    ->assertSee('Заметка добавлена');
         });
 
         $this->browse(function ($browser)  {
